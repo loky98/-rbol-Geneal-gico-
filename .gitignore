@@ -1,0 +1,25 @@
+# Configuración local de Claude Code / editores
+.claude/
+.vscode/
+.idea/
+
+# Sistema operativo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Node / herramientas (por si se usan en el futuro)
+node_modules/
+npm-debug.log*
+
+# Python (servidor local de pruebas)
+__pycache__/
+
+# Variables de entorno y secretos
+.env
+.env.*
+
+# Archivos temporales
+*.log
+*.tmp
+~$*
