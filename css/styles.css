@@ -195,32 +195,59 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .tree-stage { position: absolute; left: 0; top: 0; transform-origin: 0 0; will-change: transform; }
 .tree-stage.animate { transition: transform .35s ease; }
 .tree-lines { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
-.line-child, .line-spouse { fill: none; stroke: var(--line); stroke-width: 2; }
-.line-spouse { stroke: var(--accent); stroke-width: 2.5; }
+.rel { transition: opacity .2s; }
+.rel .vis { fill: none; stroke: var(--line); stroke-width: 2; stroke-linejoin: round; transition: stroke .15s, stroke-width .15s; }
+.rel .hit { fill: none; stroke: transparent; stroke-width: 14; pointer-events: stroke; cursor: help; }
+.rel-spouse .vis { stroke: var(--accent); stroke-width: 2.5; }
+.rel-coparent .vis { stroke: var(--accent); stroke-width: 2.5; stroke-dasharray: 7 5; }
+.rel.hl .vis { stroke: var(--primary); stroke-width: 3.5; }
+.rel.dim { opacity: .18; }
+.rel.hover { opacity: 1; }
+.rel.hover .vis { stroke: var(--danger); stroke-width: 4; }
 
 .person-card {
-  position: absolute; display: flex; align-items: center; gap: .65rem; padding: .55rem .7rem;
+  position: absolute; display: flex; align-items: center; gap: .6rem; padding: .5rem .65rem;
   background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
   border-left: 4px solid var(--other); box-shadow: var(--shadow);
-  text-align: left; cursor: pointer; transition: box-shadow .15s, transform .15s;
+  text-align: left; cursor: pointer; transition: box-shadow .15s, opacity .2s;
 }
 .person-card:hover { box-shadow: var(--shadow-lg); }
 .person-card.selected { outline: 3px solid var(--accent); outline-offset: 2px; }
 .person-card.g-M { border-left-color: var(--male); }
 .person-card.g-F { border-left-color: var(--female); }
 .person-card.deceased { background: var(--surface-2); }
+.person-card.dim { opacity: .35; }
+.person-card.kin { box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary) 45%, transparent), var(--shadow); }
+.person-card.line-hover { outline: 3px solid var(--danger); outline-offset: 2px; opacity: 1; }
+.kin-badge {
+  position: absolute; top: -11px; left: 12px; max-width: calc(100% - 24px);
+  padding: 1px 8px; border-radius: 999px; background: var(--primary); color: var(--primary-text);
+  font-size: .68rem; font-weight: 600; line-height: 1.5; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  pointer-events: none;
+}
 .avatar {
-  flex: none; width: 50px; height: 50px; border-radius: 50%; overflow: hidden;
+  flex: none; width: 48px; height: 48px; border-radius: 50%; overflow: hidden;
   display: grid; place-items: center; font-weight: 600; font-size: .95rem;
   background: color-mix(in srgb, var(--primary) 14%, var(--surface)); color: var(--primary);
 }
 .avatar img, .big-avatar img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
-.card-text { display: flex; flex-direction: column; min-width: 0; }
+/* Nombre arriba (máx. 2 líneas) y años/edad siempre visibles debajo */
+.card-text {
+  flex: 1; min-width: 0; max-height: 100%; overflow: hidden;
+  display: grid; grid-template-rows: auto auto; align-content: center; row-gap: 2px;
+}
 .card-name {
-  font-weight: 600; font-size: .9rem; line-height: 1.25;
+  font-weight: 600; font-size: .86rem; line-height: 1.22; overflow-wrap: anywhere;
   display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
 }
-.card-years { display: flex; flex-direction: column; font-size: .78rem; line-height: 1.3; color: var(--muted); white-space: nowrap; }
+.card-name.long { font-size: .78rem; }
+.card-years { display: flex; flex-direction: column; font-size: .76rem; line-height: 1.28; color: var(--muted); white-space: nowrap; }
+.card-years > span { overflow: hidden; text-overflow: ellipsis; }
+.line-tip {
+  position: absolute; z-index: 6; transform: translate(-50%, -100%); max-width: min(320px, 90%);
+  padding: .35rem .65rem; border-radius: 8px; background: var(--text); color: var(--bg);
+  font-size: .8rem; box-shadow: var(--shadow-lg); pointer-events: none; text-align: center;
+}
 .cross { color: var(--muted); font-family: var(--font-serif); }
 
 .empty {
@@ -278,6 +305,7 @@ body.panel-open .zoom-controls { right: calc(420px + 16px); }
 .chip.g-F { border-left-color: var(--female); }
 .chip-name { border: 0; background: none; padding: .3rem .6rem; cursor: pointer; font-size: .86rem; }
 .chip-name:hover { text-decoration: underline; }
+.chip-kin { color: var(--muted); font-size: .72rem; margin-left: .2rem; }
 .chip-x { border: 0; background: none; padding: .3rem .5rem .3rem .1rem; cursor: pointer; color: var(--muted); font-size: .7rem; }
 .chip-x:hover { color: var(--danger); }
 

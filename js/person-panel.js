@@ -16,17 +16,31 @@ function chip(ctx, id, relType, relOwner, relTarget) {
   </span>`;
 }
 
+function kinChip(ctx, id, label) {
+  const p = ctx.index.byId.get(id);
+  return `<span class="chip g-${esc(p.gender || 'O')}">
+    <button type="button" class="chip-name" data-go="${esc(id)}">${esc(fullName(p))}
+      <small class="chip-kin">${esc(label)}</small></button>
+  </span>`;
+}
+
+const EXTENDED_GROUPS = ['Abuelos', 'Bisabuelos', 'Nietos', 'Bisnietos', 'Tíos', 'Sobrinos', 'Primos', 'Familia política', 'Otros'];
+
 function familySection(ctx, p) {
   const parents = ctx.index.parentsOf(p.id);
-  const spouses = ctx.index.spousesOf(p.id);
+  const partners = ctx.index.partnersOf(p.id);
   const children = ctx.index.childrenOf(p.id);
-  const siblings = ctx.index.siblingsOf(p.id);
+  const kin = ctx.index.kinship(p.id);
   const row = (label, items) => (items.length ? `<div class="fam-row"><span class="fam-label">${label}</span><div class="chips">${items.join('')}</div></div>` : '');
+  const byGroup = (group) => [...kin].filter(([, k]) => k.group === group);
   const rows = [
     row('Padres', parents.map((id) => chip(ctx, id, 'parent', p.id, id))),
-    row('Pareja', spouses.map((id) => chip(ctx, id, 'spouse', p.id, id))),
+    row(partners.length > 1 ? 'Parejas' : 'Pareja', partners.map(({ id, kind }) => (kind === 'spouse'
+      ? chip(ctx, id, 'spouse', p.id, id)
+      : kinChip(ctx, id, 'hijos en común')))),
     row('Hijos', children.map((id) => chip(ctx, id, 'parent', id, p.id))),
-    row('Hermanos', siblings.map((id) => chip(ctx, id))),
+    row('Hermanos', byGroup('Hermanos').map(([id, k]) => (k.label.startsWith('Medi') ? kinChip(ctx, id, k.label.toLowerCase()) : chip(ctx, id)))),
+    ...EXTENDED_GROUPS.map((group) => row(group, byGroup(group).map(([id, k]) => kinChip(ctx, id, k.label.toLowerCase())))),
   ].join('');
   return rows || '<p class="muted">Aún no tiene familiares vinculados.</p>';
 }
