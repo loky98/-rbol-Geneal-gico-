@@ -2,8 +2,8 @@
 // (ratón, rueda y gestos táctiles con dos dedos).
 import { esc, fullName, initials, lifeShort } from './utils.js';
 
-const W = 184;          // ancho de tarjeta
-const H = 74;           // alto de tarjeta
+const W = 200;        // ancho de tarjeta
+const H = 88;       // alto de tarjeta
 const COUPLE_GAP = 22;  // separación entre esposos
 const H_GAP = 34;       // separación entre familias
 const ROW_H = H + 96;   // distancia entre generaciones
@@ -156,7 +156,8 @@ export class FamilyTree {
         <span class="avatar" data-photo="${esc(p.photo_path || '')}">${esc(initials(p))}</span>
         <span class="card-text">
           <span class="card-name">${esc(fullName(p))}</span>
-          <span class="card-years">${p.death_year ? '<span class="cross">†</span> ' : ''}${esc(lifeShort(p))}</span>
+          <span class="card-years">${lifeShort(p).split(' · ').map((part, i) =>
+            `<span>${i === 0 && p.death_year ? '<span class="cross">†</span> ' : ''}${esc(part)}</span>`).join('')}</span>
         </span>
       </button>`;
     }).join('');

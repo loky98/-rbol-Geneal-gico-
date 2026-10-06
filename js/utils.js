@@ -32,10 +32,13 @@ const yearsText = (n) => `${n} ${n === 1 ? 'año' : 'años'}`;
 
 /**
  * Texto corto para la tarjeta del árbol:
- * vivos → edad calculada ("45 años"); fallecidos → "1950 – 2010".
+ * vivos → edad calculada ("45 años"); fallecidos → "1950 – 2010 · 60 años".
  */
 export function lifeShort(p) {
-  if (p.death_year) return `${p.birth_year ?? '?'} – ${p.death_year}`;
+  if (p.death_year) {
+    const range = `${p.birth_year ?? '?'} – ${p.death_year}`;
+    return p.birth_year ? `${range} · ${yearsText(ageOf(p))}` : range;
+  }
   const age = ageOf(p);
   return age != null ? yearsText(age) : '';
 }
@@ -45,7 +48,7 @@ export function lifeLong(p) {
   const age = ageOf(p);
   if (p.death_year) {
     const range = `${p.birth_year ?? '?'} – ${p.death_year}`;
-    return p.birth_year ? `${range} (vivió ${yearsText(age)})` : range;
+    return p.birth_year ? `${range} · falleció a los ${yearsText(age)}` : range;
   }
   if (age == null) return '';
   return p.birth_year ? `${yearsText(age)} · nació en ${p.birth_year}` : `Edad: ${yearsText(age)}`;
