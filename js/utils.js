@@ -28,27 +28,27 @@ export function ageOf(p) {
   return p.age ?? null;
 }
 
-/** Texto corto de fechas para la tarjeta del árbol: "1950 – 2010" o "34 años". */
+const yearsText = (n) => `${n} ${n === 1 ? 'año' : 'años'}`;
+
+/**
+ * Texto corto para la tarjeta del árbol:
+ * vivos → edad calculada ("45 años"); fallecidos → "1950 – 2010".
+ */
 export function lifeShort(p) {
-  if (p.birth_year || p.death_year) {
-    const b = p.birth_year ?? '?';
-    return p.death_year ? `${b} – ${p.death_year}` : `n. ${b}`;
-  }
-  return p.age != null ? `${p.age} años` : '';
+  if (p.death_year) return `${p.birth_year ?? '?'} – ${p.death_year}`;
+  const age = ageOf(p);
+  return age != null ? yearsText(age) : '';
 }
 
 /** Texto largo para la ficha. */
 export function lifeLong(p) {
-  const parts = [];
-  if (p.birth_year) parts.push(`Nació en ${p.birth_year}`);
-  if (p.death_year) parts.push(`falleció en ${p.death_year}`);
   const age = ageOf(p);
-  let text = parts.join(' · ');
-  if (age != null) {
-    const ageText = p.death_year ? `vivió ${age} años` : `${age} años`;
-    text = text ? `${text} (${ageText})` : (p.birth_year ? ageText : `Edad: ${age} años`);
+  if (p.death_year) {
+    const range = `${p.birth_year ?? '?'} – ${p.death_year}`;
+    return p.birth_year ? `${range} (vivió ${yearsText(age)})` : range;
   }
-  return text;
+  if (age == null) return '';
+  return p.birth_year ? `${yearsText(age)} · nació en ${p.birth_year}` : `Edad: ${yearsText(age)}`;
 }
 
 export function toast(message, type = 'info', ms = 3500) {
