@@ -45,16 +45,29 @@ $('#login-form').addEventListener('submit', async (e) => {
       $('#password').value = '';
       await startApp();
     } else {
+      err.textContent = 'Contraseña incorrecta';
       err.hidden = false;
       $('#password').select();
     }
   } catch (ex) {
     console.error(ex);
-    err.textContent = 'No se pudo conectar. Revisa tu conexión.';
+    err.textContent = ex.message || 'No se pudo conectar. Revisa tu conexión.';
     err.hidden = false;
   } finally {
     btn.disabled = false;
   }
+});
+
+// Mostrar u ocultar la contraseña
+$('#toggle-password').addEventListener('click', (e) => {
+  const input = $('#password');
+  const show = input.type === 'password';
+  input.type = show ? 'text' : 'password';
+  const btn = e.currentTarget;
+  btn.setAttribute('aria-pressed', String(show));
+  btn.setAttribute('aria-label', show ? 'Ocultar contraseña' : 'Mostrar contraseña');
+  btn.title = btn.getAttribute('aria-label');
+  input.focus();
 });
 
 $('#logout').addEventListener('click', async () => {

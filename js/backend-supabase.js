@@ -3,7 +3,10 @@
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
 import { SUPABASE_URL, SUPABASE_ANON_KEY, FAMILY_EMAIL, BUCKET } from './config.js';
 
-const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+// Acepta también la URL copiada con "/rest/v1/" al final
+const BASE_URL = SUPABASE_URL.trim().replace(/\/rest\/v1\/?$/, '').replace(/\/+$/, '');
+
+const sb = createClient(BASE_URL, SUPABASE_ANON_KEY, {
   auth: { persistSession: true, autoRefreshToken: true },
 });
 
@@ -45,7 +48,13 @@ export default {
 
   async login(password) {
     const { error } = await sb.auth.signInWithPassword({ email: FAMILY_EMAIL, password });
-    return !error;
+    if (!error) return true;
+    console.warn('Supabase login:', error.code, error.message);
+    if (error.code === 'email_not_confirmed') {
+      throw new Error('El usuario de la familia no está confirmado en Supabase (Authentication → Users).');
+    }
+    if (error.code !== 'invalid_credentials') throw new Error(`Supabase: ${error.message}`);
+    return false;
   },
 
   async logout() {

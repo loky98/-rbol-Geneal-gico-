@@ -1,6 +1,7 @@
 -- =============================================================
 -- Árbol Genealógico · Familia Valenverguer
 -- Ejecuta este archivo completo en Supabase → SQL Editor → Run
+-- (se puede volver a ejecutar sin perder datos)
 -- =============================================================
 
 -- ---------- Personas ----------
@@ -47,7 +48,16 @@ create index if not exists relationships_person_idx  on public.relationships (pe
 create index if not exists relationships_related_idx on public.relationships (related_id);
 create index if not exists media_person_idx          on public.media (person_id);
 
--- ---------- Seguridad: solo usuarios autenticados (la contraseña familiar) ----------
+-- ---------- Seguridad ----------
+-- Solo el usuario de la familia (el que entra con la contraseña familiar) puede
+-- leer o escribir. Aunque alguien lograra registrarse con otro correo, no vería nada.
+create or replace function public.is_family()
+returns boolean
+language sql stable
+as $$
+  select coalesce(auth.jwt() ->> 'email', '') = 'familia@valenverguer.app'
+$$;
+
 alter table public.persons       enable row level security;
 alter table public.relationships enable row level security;
 alter table public.media         enable row level security;
@@ -56,9 +66,9 @@ drop policy if exists "familia_all" on public.persons;
 drop policy if exists "familia_all" on public.relationships;
 drop policy if exists "familia_all" on public.media;
 
-create policy "familia_all" on public.persons       for all to authenticated using (true) with check (true);
-create policy "familia_all" on public.relationships for all to authenticated using (true) with check (true);
-create policy "familia_all" on public.media         for all to authenticated using (true) with check (true);
+create policy "familia_all" on public.persons       for all to authenticated using (public.is_family()) with check (public.is_family());
+create policy "familia_all" on public.relationships for all to authenticated using (public.is_family()) with check (public.is_family());
+create policy "familia_all" on public.media         for all to authenticated using (public.is_family()) with check (public.is_family());
 
 -- ---------- Storage: bucket privado para fotos y audios ----------
 insert into storage.buckets (id, name, public)
@@ -70,7 +80,7 @@ drop policy if exists "familia_media_insert" on storage.objects;
 drop policy if exists "familia_media_update" on storage.objects;
 drop policy if exists "familia_media_delete" on storage.objects;
 
-create policy "familia_media_select" on storage.objects for select to authenticated using (bucket_id = 'family-media');
-create policy "familia_media_insert" on storage.objects for insert to authenticated with check (bucket_id = 'family-media');
-create policy "familia_media_update" on storage.objects for update to authenticated using (bucket_id = 'family-media');
-create policy "familia_media_delete" on storage.objects for delete to authenticated using (bucket_id = 'family-media');
+create policy "familia_media_select" on storage.objects for select to authenticated using (bucket_id = 'family-media' and public.is_family());
+create policy "familia_media_insert" on storage.objects for insert to authenticated with check (bucket_id = 'family-media' and public.is_family());
+create policy "familia_media_update" on storage.objects for update to authenticated using (bucket_id = 'family-media' and public.is_family());
+create policy "familia_media_delete" on storage.objects for delete to authenticated using (bucket_id = 'family-media' and public.is_family());
